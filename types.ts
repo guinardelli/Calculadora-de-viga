@@ -12,6 +12,7 @@ export interface BeamInput {
   fyk: number;
   mk: number;
   cover: number;
+  dPrime: number;
   aggressiveness: AggressivenessClass;
 }
 
@@ -20,12 +21,14 @@ export enum CalculationStatus {
   ERROR_X_D_LIMIT = 'error_x_d_limit',
   ERROR_MAX_STEEL = 'error_max_steel',
   WARNING_MIN_STEEL = 'warning_min_steel',
+  SUCCESS_COMPRESSION_STEEL = 'success_compression_steel',
   ERROR_INPUT = 'error_input',
   IDLE = 'idle',
 }
 
 export interface CalculationResult {
   as: number;
+  asPrime: number;
   asMin: number;
   asMax: number;
   x: number;
@@ -41,6 +44,13 @@ export interface CalculationResult {
   asCalc: number;
   fctm: number;
   rhoMin: number;
+  // For compression steel memory
+  asPrimeCalc: number;
+  as1: number;
+  as2: number;
+  m1d: number;
+  m2d: number;
+  sigma_sd: number;
 }
 
 // --- Shear Calculation Types ---

@@ -11,6 +11,7 @@ export const DEFAULT_INPUTS: BeamInput = {
   fyk: 500,
   mk: 8,
   cover: 3.0,
+  dPrime: 5.0,
   aggressiveness: AggressivenessClass.CAA2,
 };
 
