@@ -1,0 +1,5 @@
+{
+  "name": "Calculadora de Viga de Concreto Armado",
+  "description": "Uma aplicação web para calcular a armadura de flexão simples em vigas de concreto armado, seguindo as diretrizes da norma brasileira NBR 6118. Insira os parâmetros da viga e os esforços para obter a área de aço necessária, verificações de ductilidade e armaduras mínima e máxima.",
+  "requestFramePermissions": []
+}
