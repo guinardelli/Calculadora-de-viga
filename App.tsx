@@ -1,23 +1,36 @@
 import React, { useState } from 'react';
 import { HomePage } from './components/HomePage';
-import { CalculatorPage } from './components/CalculatorPage';
+import { FlexureCalculatorPage } from './components/CalculatorPage';
+import { ShearCalculatorPage } from './components/ShearCalculatorPage';
+
+export type Page = 'home' | 'flexure' | 'shear';
 
 const App: React.FC = () => {
-  const [page, setPage] = useState<'home' | 'calculator'>('home');
+  const [page, setPage] = useState<Page>('home');
 
-  const handleStart = () => {
-    setPage('calculator');
+  const handleStart = (calculator: Page) => {
+    if (calculator !== 'home') {
+      setPage(calculator);
+    }
   };
 
   const handleBackToHome = () => {
     setPage('home');
   };
 
-  if (page === 'home') {
-    return <HomePage onStart={handleStart} />;
-  }
+  const renderPage = () => {
+    switch (page) {
+      case 'flexure':
+        return <FlexureCalculatorPage onBackToHome={handleBackToHome} />;
+      case 'shear':
+        return <ShearCalculatorPage onBackToHome={handleBackToHome} />;
+      case 'home':
+      default:
+        return <HomePage onStart={handleStart} />;
+    }
+  };
 
-  return <CalculatorPage onBackToHome={handleBackToHome} />;
+  return <>{renderPage()}</>;
 };
 
 export default App;

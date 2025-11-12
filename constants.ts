@@ -1,4 +1,4 @@
-import { AggressivenessClass, type BeamInput } from './types';
+import { AggressivenessClass, type BeamInput, type ShearInput } from './types';
 
 export const GAMMA_C = 1.4;
 export const GAMMA_S = 1.15;
@@ -19,4 +19,19 @@ export const COVER_BY_AGGRESSIVENESS: { [key in AggressivenessClass]: number } =
   [AggressivenessClass.CAA2]: 3.0,
   [AggressivenessClass.CAA3]: 4.0,
   [AggressivenessClass.CAA4]: 5.0,
+};
+
+// --- Shear Constants ---
+
+export const STIRRUP_DIAMETERS: readonly number[] = [5.0, 6.3, 8.0, 10.0, 12.5];
+
+export const DEFAULT_SHEAR_INPUTS: ShearInput = {
+  bw: 20,
+  h: 50,
+  fck: 25,
+  fyk: 500,
+  vk: 10,
+  cover: 3.0,
+  stirrupDiameter: 5.0,
+  numLegs: 2,
 };

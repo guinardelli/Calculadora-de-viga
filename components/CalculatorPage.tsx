@@ -7,11 +7,11 @@ import { FormField } from './FormField';
 import { ResultDisplay } from './ResultDisplay';
 import { BeamVisualizer } from './BeamVisualizer';
 
-interface CalculatorPageProps {
+interface FlexureCalculatorPageProps {
   onBackToHome: () => void;
 }
 
-export const CalculatorPage: React.FC<CalculatorPageProps> = ({ onBackToHome }) => {
+export const FlexureCalculatorPage: React.FC<FlexureCalculatorPageProps> = ({ onBackToHome }) => {
   const [inputs, setInputs] = useState<BeamInput>(DEFAULT_INPUTS);
   const [results, setResults] = useState<CalculationResult | null>(null);
 

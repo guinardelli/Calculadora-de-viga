@@ -36,3 +36,37 @@ export interface CalculationResult {
   status: CalculationStatus;
   message: string;
 }
+
+// --- Shear Calculation Types ---
+
+export interface ShearInput {
+  bw: number;
+  h: number;
+  fck: number;
+  fyk: number;
+  vk: number;
+  cover: number;
+  stirrupDiameter: number;
+  numLegs: number;
+}
+
+export enum ShearCalculationStatus {
+  SUCCESS = 'success',
+  ERROR_VRD2 = 'error_vrd2',
+  WARNING_MIN_STEEL = 'warning_min_steel',
+  ERROR_INPUT = 'error_input',
+  IDLE = 'idle',
+}
+
+export interface ShearCalculationResult {
+  status: ShearCalculationStatus;
+  message: string;
+  s_calc: number;
+  s_max: number;
+  s_adopted: number;
+  vrd2: number;
+  vc: number;
+  vsw: number;
+  vd: number;
+  asw_s_min: number;
+}
