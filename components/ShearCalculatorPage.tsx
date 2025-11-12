@@ -162,6 +162,13 @@ export const ShearCalculatorPage: React.FC<ShearCalculatorPageProps> = ({ onBack
                 unit="cm²/cm"
                 tooltip="Armadura mínima para garantir o comportamento dúctil."
               />
+               <ResultDisplay 
+                label="Espaçamento p/ Arm. Mínima" 
+                description="s, arm.mín"
+                value={isFinite(results.s_for_min_area) ? results.s_for_min_area.toFixed(1) : 'N/A'}
+                unit="cm"
+                tooltip="Espaçamento máximo para atender a taxa de armadura mínima."
+              />
               <ResultDisplay 
                 label="Espaçamento Máximo" 
                 description="s,max"
@@ -225,8 +232,8 @@ export const ShearCalculatorPage: React.FC<ShearCalculatorPageProps> = ({ onBack
                         />
                         <CalculationStep 
                             title="Espaçamento Final Adotado (s)"
-                            formula="s = min(s_calc, s_max, s_p/ armadura mínima)"
-                            calculation={`s = min(${isFinite(results.s_calc) ? results.s_calc.toFixed(1) : '∞'}, ${results.s_max.toFixed(1)}, ${(results.asw / results.asw_s_min).toFixed(1)})`}
+                            formula="s = min(s_calc, s_arm_mín, s_max)"
+                            calculation={`s = min(${isFinite(results.s_calc) ? results.s_calc.toFixed(1) : '∞'}, ${results.s_for_min_area.toFixed(1)}, ${results.s_max.toFixed(1)})`}
                             result={`s = ${results.s_adopted.toFixed(1)} cm`}
                             isFinal
                         />

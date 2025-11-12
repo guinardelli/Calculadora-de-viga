@@ -7,6 +7,7 @@ export const calculateShear = (inputs: ShearInput): ShearCalculationResult => {
   
   const initialResult: Omit<ShearCalculationResult, 'status' | 'message'> = {
     s_calc: 0, s_max: 0, s_adopted: 0, vrd2: 0, vc: 0, vsw: 0, vd: 0, asw_s_min: 0,
+    s_for_min_area: 0,
     d: 0, fcd: 0, fctd: 0, fywd: 0, alpha_v2: 0, asw: 0,
   };
   
@@ -61,7 +62,8 @@ export const calculateShear = (inputs: ShearInput): ShearCalculationResult => {
   // --- Minimum Stirrup Area ---
   // Asw,min / s = rho_sw * bw => s_for_min_area = Asw / (rho_sw * bw)
   const rho_sw_min = (0.2 * fctm) / fyk;
-  const s_for_min_area = Asw / (rho_sw_min * bw); // cm
+  const asw_s_min = rho_sw_min * bw;
+  const s_for_min_area = Asw / (asw_s_min);
   
   // --- Maximum Spacing (s_max) ---
   let s_max;
@@ -74,7 +76,6 @@ export const calculateShear = (inputs: ShearInput): ShearCalculationResult => {
   // --- Adopted Spacing ---
   const s_adopted = Math.min(s_calc, s_for_min_area, s_max);
 
-  const asw_s_min = rho_sw_min * bw;
   
   let status = ShearCalculationStatus.SUCCESS;
   let message = 'Dimensionamento dos estribos concluído com sucesso.';
@@ -86,6 +87,7 @@ export const calculateShear = (inputs: ShearInput): ShearCalculationResult => {
   
   const fullResult = {
     s_calc, s_max, s_adopted, vrd2: VRd2, vc: Vc, vsw: Vsw, vd: Vd, asw_s_min,
+    s_for_min_area,
     d, fcd, fctd, fywd, alpha_v2, asw: Asw,
   };
 

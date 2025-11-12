@@ -85,6 +85,7 @@ export interface ShearCalculationResult {
   vsw: number;
   vd: number;
   asw_s_min: number;
+  s_for_min_area: number;
   // For calculation memory
   d: number;
   fcd: number;
