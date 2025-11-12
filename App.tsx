@@ -100,7 +100,17 @@ const App: React.FC = () => {
               <ResultDisplay label="Armadura Mínima (A_s,min)" value={results.asMin.toFixed(2)} unit="cm²" tooltip="Menor área de aço permitida pela norma para evitar ruptura frágil."/>
               <ResultDisplay label="Armadura Máxima (A_s,max)" value={results.asMax.toFixed(2)} unit="cm²" tooltip="Maior área de aço permitida pela norma para garantir boa concretagem."/>
             
-              <BeamVisualizer bw={inputs.bw} h={inputs.h} d={results.d} cover={inputs.cover} as={results.as} />
+              {(results.status === CalculationStatus.SUCCESS || results.status === CalculationStatus.WARNING_MIN_STEEL) && (
+                 <BeamVisualizer 
+                    bw={inputs.bw} 
+                    h={inputs.h} 
+                    d={results.d} 
+                    cover={inputs.cover} 
+                    as={results.as} 
+                    x={results.x} 
+                    fck={inputs.fck} 
+                 />
+              )}
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center bg-white p-10 rounded-xl shadow-lg h-full text-center">
