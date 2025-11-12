@@ -5,13 +5,16 @@ import { AnchorageCalculationStatus, BarType, BondCondition, SteelRatioOption, A
 export const calculateAnchorage = (inputs: AnchorageInput): AnchorageCalculationResult => {
     const { diameter, fck, barType, steelRatioOption, asCalc, asEff, anchorageType, bondCondition } = inputs;
     
-    const initialResult = { lb: 0, lb_min: 0, lb_nec: 0 };
+    const initialResult = { 
+        lb: 0, lb_min: 0, lb_nec: 0, fyd: 0, fctd: 0, n1: 0, n2: 0, n3: 0, fbd: 0, 
+        alpha: 0, steelRatio: 0, lb_nec_calc: 0, phi: 0 
+    };
     
-    if (!diameter || !fck || (steelRatioOption === SteelRatioOption.CUSTOM && (!asCalc || !asEff)) || [diameter, fck, asCalc, asEff].some(v => v <= 0)) {
+    if (!diameter || !fck || (steelRatioOption === SteelRatioOption.CUSTOM && (!asCalc || !asEff)) || [diameter, fck, asCalc, asEff].some(v => v < 0)) {
         return {
             ...initialResult,
             status: AnchorageCalculationStatus.ERROR_INPUT,
-            message: 'Todos os valores de entrada devem ser positivos e maiores que zero.',
+            message: 'Valores de entrada devem ser positivos. Verifique os campos.',
         };
     }
 
@@ -51,7 +54,7 @@ export const calculateAnchorage = (inputs: AnchorageInput): AnchorageCalculation
     // --- Necessary Anchorage Length (lb,nec) ---
     // According to NBR 6118, hooks cannot be used for plain bars.
     const alpha = (anchorageType === AnchorageType.HOOK && barType !== BarType.CA25) ? 0.7 : 1.0;
-    const steelRatio = steelRatioOption === SteelRatioOption.EQUAL ? 1.0 : asCalc / asEff;
+    const steelRatio = steelRatioOption === SteelRatioOption.EQUAL ? 1.0 : (asCalc > 0 && asEff > 0 ? asCalc / asEff : 1.0);
     const lb_nec_calc = alpha * lb * steelRatio;
 
     // --- Minimum Anchorage Length (lb,min) ---
@@ -62,8 +65,18 @@ export const calculateAnchorage = (inputs: AnchorageInput): AnchorageCalculation
     return {
         status: AnchorageCalculationStatus.SUCCESS,
         message: 'Cálculo do comprimento de ancoragem concluído.',
-        lb: lb,
-        lb_min: lb_min,
-        lb_nec: lb_nec,
+        lb,
+        lb_min,
+        lb_nec,
+        fyd,
+        fctd,
+        n1,
+        n2,
+        n3,
+        fbd,
+        alpha,
+        steelRatio,
+        lb_nec_calc,
+        phi
     };
 };

@@ -1,4 +1,3 @@
-
 export enum AggressivenessClass {
   CAA1 = 'I (Fraca)',
   CAA2 = 'II (Moderada)',
@@ -117,4 +116,15 @@ export interface AnchorageCalculationResult {
   lb: number;
   lb_min: number;
   lb_nec: number;
+  // Intermediate values for calculation memory
+  fyd: number;
+  fctd: number;
+  n1: number;
+  n2: number;
+  n3: number;
+  fbd: number;
+  alpha: number;
+  steelRatio: number;
+  lb_nec_calc: number;
+  phi: number;
 }

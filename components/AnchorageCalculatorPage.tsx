@@ -5,6 +5,7 @@ import { DEFAULT_ANCHORAGE_INPUTS, BAR_DIAMETERS } from '../constants';
 import { calculateAnchorage } from '../services/anchorageCalculationService';
 import { FormField } from './FormField';
 import { ResultDisplay } from './ResultDisplay';
+import { CalculationStep } from './CalculationStep';
 
 interface AnchorageCalculatorPageProps {
   onBackToHome: () => void;
@@ -187,6 +188,59 @@ export const AnchorageCalculatorPage: React.FC<AnchorageCalculatorPageProps> = (
                 unit="cm" 
                 tooltip="Valor mínimo absoluto para o comprimento de ancoragem, conforme a norma."
               />
+
+              {results.status === AnchorageCalculationStatus.SUCCESS && (
+                <div className="mt-6 pt-4 border-t border-slate-200">
+                    <h2 className="text-2xl font-semibold text-slate-800 mb-4">Memória de Cálculo</h2>
+                    <div className="space-y-4">
+                        <CalculationStep 
+                            title="Resistência de Cálculo do Aço (fyd)"
+                            formula="f_yd = f_yk / γ_s"
+                            calculation={`f_yd = ${results.fyd * 1.15 * 10} MPa / 1.15`}
+                            result={`f_yd = ${results.fyd.toFixed(2)} kN/cm²`}
+                        />
+                        <CalculationStep 
+                            title="Resistência de Cálculo do Concreto à Tração (fctd)"
+                            formula="f_ctd = f_ctk,inf / γ_c"
+                            calculation={`f_ctd = ${results.fctd * 1.4 * 10} MPa / 1.4`}
+                            result={`f_ctd = ${results.fctd.toFixed(4)} kN/cm²`}
+                        />
+                         <CalculationStep 
+                            title="Tensão de Aderência de Cálculo (fbd)"
+                            formula="f_bd = η₁ ⋅ η₂ ⋅ η₃ ⋅ f_ctd"
+                            calculation={`f_bd = ${results.n1.toFixed(2)} ⋅ ${results.n2.toFixed(1)} ⋅ ${results.n3.toFixed(2)} ⋅ ${results.fctd.toFixed(4)}`}
+                            result={`f_bd = ${results.fbd.toFixed(4)} kN/cm²`}
+                        />
+                         <CalculationStep 
+                            title="Comprimento de Ancoragem Básico (lb)"
+                            formula="l_b = (Ø / 4) ⋅ (f_yd / f_bd)"
+                            calculation={`l_b = (${results.phi.toFixed(2)} cm / 4) ⋅ (${results.fyd.toFixed(2)} / ${results.fbd.toFixed(4)})`}
+                            result={`l_b = ${results.lb.toFixed(1)} cm`}
+                            note={isCA25 ? "Nota: Valor multiplicado por 2.0 por se tratar de barra lisa (CA-25)." : ""}
+                        />
+                        <CalculationStep 
+                            title="Comprimento de Ancoragem de Cálculo (lb,nec,calc)"
+                            formula="l_b,nec,calc = α ⋅ (A_s,calc / A_s,ef) ⋅ l_b"
+                            calculation={`l_b,nec,calc = ${results.alpha.toFixed(1)} ⋅ ${results.steelRatio.toFixed(2)} ⋅ ${results.lb.toFixed(1)}`}
+                            result={`l_b,nec,calc = ${results.lb_nec_calc.toFixed(1)} cm`}
+                        />
+                        <CalculationStep 
+                            title="Comprimento de Ancoragem Mínimo (lb,min)"
+                            formula="l_b,min = max(0.3 ⋅ l_b; 10 ⋅ Ø; 10 cm)"
+                            calculation={`l_b,min = max(${(0.3 * results.lb).toFixed(1)}; ${(10 * results.phi).toFixed(1)}; 10)`}
+                            result={`l_b,min = ${results.lb_min.toFixed(1)} cm`}
+                        />
+                         <CalculationStep 
+                            title="Comprimento de Ancoragem Necessário (lb,nec)"
+                            formula="l_b,nec = max(l_b,nec,calc; l_b,min)"
+                            calculation={`l_b,nec = max(${results.lb_nec_calc.toFixed(1)}; ${results.lb_min.toFixed(1)})`}
+                            result={`l_b,nec = ${results.lb_nec.toFixed(1)} cm`}
+                            isFinal
+                        />
+                    </div>
+                </div>
+              )}
+
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center bg-white p-10 rounded-xl shadow-lg h-full text-center">
