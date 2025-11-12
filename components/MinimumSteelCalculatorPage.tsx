@@ -1,10 +1,9 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import type { MinimumSteelInput, MinimumSteelResult } from '../types';
 import { MinimumSteelStatus } from '../types';
-import { DEFAULT_MINIMUM_STEEL_INPUTS, FCK_VALUES, GAMMA_C, GAMMA_S } from '../constants';
+import { DEFAULT_MINIMUM_STEEL_INPUTS, FCK_VALUES } from '../constants';
 import { calculateMinimumSteel } from '../services/minimumSteelCalculationService';
 import { FormField } from './FormField';
-import { CalculationStep } from './CalculationStep';
 
 interface MinimumSteelCalculatorPageProps {
   onBackToHome: () => void;
@@ -90,62 +89,14 @@ export const MinimumSteelCalculatorPage: React.FC<MinimumSteelCalculatorPageProp
                         <ResultField label="As,mín (cm²)" value={results.as_min_by_rate.toFixed(2)} unit="cm²" />
                     </div>
                     <div>
-                        <h3 className="text-xl font-semibold text-slate-800 border-b pb-2 mb-4">Momento Mínimo Resistido</h3>
-                        <ResultField label="Módulo de Resistência Elástico (W)" value={results.w.toFixed(1)} unit="cm³" />
+                        <h3 className="text-xl font-semibold text-slate-800 border-b pb-2 mb-4">Momento Mínimo</h3>
+                        <ResultField label="Módulo de Resistência (cm³)" value={results.w.toFixed(1)} unit="cm³" />
                         <ResultField label="Momento Mínimo (tf.m)" value={results.md_resisted.toFixed(2)} unit="tf.m" />
                         <ResultField label="Prof. Linha Neutra (cm)" value={results.x.toFixed(2)} unit="cm" />
+                        <ResultField label="Taxa de Armadura (%)" value={results.rho_min_percent.toFixed(3)} unit="%" />
+                        <ResultField label="As,mín (cm²)" value={results.as_min_by_rate.toFixed(2)} unit="cm²" />
                     </div>
                 </div>
-
-                <div className="mt-8 pt-6 border-t border-slate-200">
-                  <h2 className="text-2xl font-semibold text-slate-800 mb-4">Memória de Cálculo</h2>
-                  <div className="space-y-4">
-                      <CalculationStep 
-                          title="Taxa de Armadura Mínima (ρ,min)"
-                          formula="Tabela 17.1 da NBR 6118"
-                          calculation={`Para fck = ${inputs.fck} MPa`}
-                          result={`ρ,min = ${results.rho_min_percent.toFixed(3)} %`}
-                      />
-                      <CalculationStep 
-                          title="Área de Aço Mínima (As,mín)"
-                          formula="As,mín = (ρ,min / 100) ⋅ bw ⋅ h"
-                          calculation={`As,mín = (${results.rho_min_percent} / 100) ⋅ ${inputs.bw} ⋅ ${inputs.h}`}
-                          result={`As,mín = ${results.as_min_by_rate.toFixed(2)} cm²`}
-                      />
-                      <CalculationStep 
-                          title="Altura Útil (d)"
-                          formula="d = (d/h) ⋅ h"
-                          calculation={`d = ${inputs.d_h_ratio} ⋅ ${inputs.h}`}
-                          result={`d = ${results.d.toFixed(2)} cm`}
-                      />
-                      <CalculationStep 
-                          title="Resistências de Cálculo"
-                          formula="f_cd = f_ck / γ_c; f_yd = f_yk / γ_s"
-                          calculation={`f_cd = ${inputs.fck}/${GAMMA_C}; f_yd = ${inputs.fyk}/${GAMMA_S}`}
-                          result={`f_cd = ${(results.fcd * 10).toFixed(2)} MPa; f_yd = ${(results.fyd * 10).toFixed(2)} MPa`}
-                      />
-                      <CalculationStep 
-                          title="Posição da Linha Neutra (x)"
-                          formula="0.68 ⋅ bw ⋅ x ⋅ fcd = As,mín ⋅ fyd"
-                          calculation={`0.68 ⋅ ${inputs.bw} ⋅ x ⋅ ${results.fcd.toFixed(2)} = ${results.as_min_by_rate.toFixed(2)} ⋅ ${results.fyd.toFixed(2)}`}
-                          result={`x = ${results.x.toFixed(2)} cm`}
-                      />
-                      <CalculationStep 
-                          title="Momento Resistido Mínimo de Cálculo (Md,mín)"
-                          formula="Md,mín = As,mín ⋅ fyd ⋅ (d - 0.4 ⋅ x)"
-                          calculation={`Md,mín = ${results.as_min_by_rate.toFixed(2)} ⋅ ${results.fyd.toFixed(2)} ⋅ (${results.d.toFixed(2)} - 0.4 ⋅ ${results.x.toFixed(2)})`}
-                          result={`Md,mín = ${results.md_resisted_kn_cm.toFixed(2)} kN.cm`}
-                      />
-                      <CalculationStep 
-                          title="Momento Mínimo (tf.m)"
-                          formula="M_mín (tf.m) = Md,mín (kN.cm) / 1000"
-                          calculation={`M_mín = ${results.md_resisted_kn_cm.toFixed(2)} / 1000`}
-                          result={`M_mín = ${results.md_resisted.toFixed(2)} tf.m`}
-                          isFinal
-                      />
-                  </div>
-                </div>
-
             </div>
           ) : (
              <div className="flex flex-col items-center justify-center h-full text-center">

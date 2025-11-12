@@ -12,9 +12,6 @@ export const calculateMinimumSteel = (inputs: MinimumSteelInput): MinimumSteelRe
     md_resisted: 0,
     x: 0,
     d: 0,
-    fcd: 0,
-    fyd: 0,
-    md_resisted_kn_cm: 0,
   };
 
   if (!bw || !h || !fck || !fyk || !d_h_ratio || [bw, h, fck, fyk, d_h_ratio].some(v => v <= 0)) {
@@ -75,8 +72,5 @@ export const calculateMinimumSteel = (inputs: MinimumSteelInput): MinimumSteelRe
     md_resisted: md_resisted_tf_m,
     x,
     d,
-    fcd,
-    fyd,
-    md_resisted_kn_cm: Md_resisted_kn_cm,
   };
 };

@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback, useMemo } from 'react';
 import type { ShearInput, ShearCalculationResult } from '../types';
 import { ShearCalculationStatus } from '../types';
@@ -6,6 +7,7 @@ import { calculateShear } from '../services/shearCalculationService';
 import { FormField } from './FormField';
 import { ResultDisplay } from './ResultDisplay';
 import { CalculationStep } from './CalculationStep';
+import { StirrupVisualizer } from './StirrupVisualizer';
 
 interface ShearCalculatorPageProps {
   onBackToHome: () => void;
@@ -178,67 +180,76 @@ export const ShearCalculatorPage: React.FC<ShearCalculatorPageProps> = ({ onBack
               />
 
               {(results.status === ShearCalculationStatus.SUCCESS || results.status === ShearCalculationStatus.WARNING_MIN_STEEL) && (
-                <div className="mt-6 pt-4 border-t border-slate-200">
-                    <h2 className="text-2xl font-semibold text-slate-800 mb-4">Memória de Cálculo</h2>
-                    <div className="space-y-4">
-                        <CalculationStep 
-                            title="Esforço Cortante de Cálculo (Vd)"
-                            formula="V_d = V_k ⋅ γ_f"
-                            calculation={`V_d = ${inputs.vk.toFixed(2)} tf ⋅ 10 ⋅ ${GAMMA_F}`}
-                            result={`V_d = ${results.vd.toFixed(2)} kN`}
-                        />
-                         <CalculationStep 
-                            title="Resistências de Cálculo dos Materiais"
-                            formula="f_cd = f_ck/γ_c; f_ctd = 0.7⋅f_ctm/γ_c; f_ywd = f_yk/γ_s"
-                            calculation="Cálculo das resistências minoradas do concreto e do aço..."
-                            result={`f_cd=${(results.fcd * 10).toFixed(2)} MPa; f_ctd=${(results.fctd * 10).toFixed(2)} MPa; f_ywd=${(results.fywd * 10).toFixed(2)} MPa`}
-                        />
-                         <CalculationStep 
-                            title="Verificação da Biela Comprimida (VRd,2)"
-                            formula="V_Rd,2 = 0.27 ⋅ α_v2 ⋅ f_cd ⋅ b_w ⋅ d"
-                            calculation={`V_Rd,2 = 0.27 ⋅ ${results.alpha_v2.toFixed(2)} ⋅ ${(results.fcd).toFixed(2)} ⋅ ${inputs.bw} ⋅ ${results.d.toFixed(2)}`}
-                            result={`V_Rd,2 = ${results.vrd2.toFixed(2)} kN`}
-                            note={`V_d = ${results.vd.toFixed(2)} kN ≤ V_Rd,2. OK!`}
-                        />
-                         <CalculationStep 
-                            title="Contribuição do Concreto (Vc)"
-                            formula="V_c = 0.6 ⋅ f_ctd ⋅ b_w ⋅ d"
-                            calculation={`V_c = 0.6 ⋅ ${results.fctd.toFixed(3)} ⋅ ${inputs.bw} ⋅ ${results.d.toFixed(2)}`}
-                            result={`V_c = ${results.vc.toFixed(2)} kN`}
-                        />
-                         <CalculationStep 
-                            title="Cortante a ser Absorvido pela Armadura (Vsw)"
-                            formula="V_sw = V_d - V_c"
-                            calculation={`V_sw = ${results.vd.toFixed(2)} - ${results.vc.toFixed(2)}`}
-                            result={`V_sw = ${results.vsw.toFixed(2)} kN`}
-                        />
-                        <CalculationStep 
-                            title="Armadura Mínima (Asw/s)_min"
-                            formula="(A_sw/s)_min = ρ_sw,min ⋅ b_w"
-                            calculation={`(A_sw/s)_min = ${(results.asw_s_min / inputs.bw).toFixed(5)} ⋅ ${inputs.bw}`}
-                            result={`(A_sw/s)_min = ${results.asw_s_min.toFixed(4)} cm²/cm`}
-                        />
-                         <CalculationStep 
-                            title="Espaçamento Calculado (s,calc)"
-                            formula="s = (A_sw ⋅ 0.9 ⋅ d ⋅ f_ywd) / V_sw"
-                            calculation={`s = (${results.asw.toFixed(2)} ⋅ 0.9 ⋅ ${results.d.toFixed(2)} ⋅ ${results.fywd.toFixed(2)}) / ${results.vsw.toFixed(2)}`}
-                            result={`s_calc = ${isFinite(results.s_calc) ? results.s_calc.toFixed(1) + ' cm' : 'Não necessita armadura por cálculo (Vsw=0)'}`}
-                        />
-                         <CalculationStep 
-                            title="Espaçamento Máximo (s,max)"
-                            formula="Vd ≤ 0.67⋅VRd,2 ? s_max=min(0.6d, 30cm) : s_max=min(0.3d, 20cm)"
-                            calculation={`${results.vd.toFixed(2)} kN ≤ ${(0.67 * results.vrd2).toFixed(2)} kN`}
-                            result={`s_max = ${results.s_max.toFixed(1)} cm`}
-                        />
-                        <CalculationStep 
-                            title="Espaçamento Final Adotado (s)"
-                            formula="s = min(s_calc, s_arm_mín, s_max)"
-                            calculation={`s = min(${isFinite(results.s_calc) ? results.s_calc.toFixed(1) : '∞'}, ${results.s_for_min_area.toFixed(1)}, ${results.s_max.toFixed(1)})`}
-                            result={`s = ${results.s_adopted.toFixed(1)} cm`}
-                            isFinal
-                        />
-                    </div>
-                </div>
+                <>
+                  <StirrupVisualizer
+                    bw={inputs.bw}
+                    h={inputs.h}
+                    cover={inputs.cover}
+                    stirrupDiameter={inputs.stirrupDiameter}
+                    s_adopted={results.s_adopted}
+                  />
+                  <div className="mt-6 pt-4 border-t border-slate-200">
+                      <h2 className="text-2xl font-semibold text-slate-800 mb-4">Memória de Cálculo</h2>
+                      <div className="space-y-4">
+                          <CalculationStep 
+                              title="Esforço Cortante de Cálculo (Vd)"
+                              formula="V_d = V_k ⋅ γ_f"
+                              calculation={`V_d = ${inputs.vk.toFixed(2)} tf ⋅ 10 ⋅ ${GAMMA_F}`}
+                              result={`V_d = ${results.vd.toFixed(2)} kN`}
+                          />
+                           <CalculationStep 
+                              title="Resistências de Cálculo dos Materiais"
+                              formula="f_cd = f_ck/γ_c; f_ctd = 0.7⋅f_ctm/γ_c; f_ywd = f_yk/γ_s"
+                              calculation="Cálculo das resistências minoradas do concreto e do aço..."
+                              result={`f_cd=${(results.fcd * 10).toFixed(2)} MPa; f_ctd=${(results.fctd * 10).toFixed(2)} MPa; f_ywd=${(results.fywd * 10).toFixed(2)} MPa`}
+                          />
+                           <CalculationStep 
+                              title="Verificação da Biela Comprimida (VRd,2)"
+                              formula="V_Rd,2 = 0.27 ⋅ α_v2 ⋅ f_cd ⋅ b_w ⋅ d"
+                              calculation={`V_Rd,2 = 0.27 ⋅ ${results.alpha_v2.toFixed(2)} ⋅ ${(results.fcd).toFixed(2)} ⋅ ${inputs.bw} ⋅ ${results.d.toFixed(2)}`}
+                              result={`V_Rd,2 = ${results.vrd2.toFixed(2)} kN`}
+                              note={`V_d = ${results.vd.toFixed(2)} kN ≤ V_Rd,2. OK!`}
+                          />
+                           <CalculationStep 
+                              title="Contribuição do Concreto (Vc)"
+                              formula="V_c = 0.6 ⋅ f_ctd ⋅ b_w ⋅ d"
+                              calculation={`V_c = 0.6 ⋅ ${results.fctd.toFixed(3)} ⋅ ${inputs.bw} ⋅ ${results.d.toFixed(2)}`}
+                              result={`V_c = ${results.vc.toFixed(2)} kN`}
+                          />
+                           <CalculationStep 
+                              title="Cortante a ser Absorvido pela Armadura (Vsw)"
+                              formula="V_sw = V_d - V_c"
+                              calculation={`V_sw = ${results.vd.toFixed(2)} - ${results.vc.toFixed(2)}`}
+                              result={`V_sw = ${results.vsw.toFixed(2)} kN`}
+                          />
+                          <CalculationStep 
+                              title="Armadura Mínima (Asw/s)_min"
+                              formula="(A_sw/s)_min = ρ_sw,min ⋅ b_w"
+                              calculation={`(A_sw/s)_min = ${(results.asw_s_min / inputs.bw).toFixed(5)} ⋅ ${inputs.bw}`}
+                              result={`(A_sw/s)_min = ${results.asw_s_min.toFixed(4)} cm²/cm`}
+                          />
+                           <CalculationStep 
+                              title="Espaçamento Calculado (s,calc)"
+                              formula="s = (A_sw ⋅ 0.9 ⋅ d ⋅ f_ywd) / V_sw"
+                              calculation={`s = (${results.asw.toFixed(2)} ⋅ 0.9 ⋅ ${results.d.toFixed(2)} ⋅ ${results.fywd.toFixed(2)}) / ${results.vsw.toFixed(2)}`}
+                              result={`s_calc = ${isFinite(results.s_calc) ? results.s_calc.toFixed(1) + ' cm' : 'Não necessita armadura por cálculo (Vsw=0)'}`}
+                          />
+                           <CalculationStep 
+                              title="Espaçamento Máximo (s,max)"
+                              formula="Vd ≤ 0.67⋅VRd,2 ? s_max=min(0.6d, 30cm) : s_max=min(0.3d, 20cm)"
+                              calculation={`${results.vd.toFixed(2)} kN ≤ ${(0.67 * results.vrd2).toFixed(2)} kN`}
+                              result={`s_max = ${results.s_max.toFixed(1)} cm`}
+                          />
+                          <CalculationStep 
+                              title="Espaçamento Final Adotado (s)"
+                              formula="s = min(s_calc, s_arm_mín, s_max)"
+                              calculation={`s = min(${isFinite(results.s_calc) ? results.s_calc.toFixed(1) : '∞'}, ${results.s_for_min_area.toFixed(1)}, ${results.s_max.toFixed(1)})`}
+                              result={`s = ${results.s_adopted.toFixed(1)} cm`}
+                              isFinal
+                          />
+                      </div>
+                  </div>
+                </>
               )}
             </div>
           ) : (

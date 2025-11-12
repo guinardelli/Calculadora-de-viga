@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import type { BeamInput, CalculationResult } from '../types';
 import { AggressivenessClass, CalculationStatus } from '../types';
@@ -16,6 +17,7 @@ export const FlexureCalculatorPage: React.FC<FlexureCalculatorPageProps> = ({ on
   const [inputs, setInputs] = useState<BeamInput>(DEFAULT_INPUTS);
   const [results, setResults] = useState<CalculationResult | null>(null);
   const [forceCompressionCalc, setForceCompressionCalc] = useState(false);
+  const [highlightedFields, setHighlightedFields] = useState<Set<string>>(new Set());
 
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -33,6 +35,32 @@ export const FlexureCalculatorPage: React.FC<FlexureCalculatorPageProps> = ({ on
   }, [inputs, forceCompressionCalc]);
 
   useEffect(() => {
+    if (!results) {
+      setHighlightedFields(new Set());
+      return;
+    }
+    const fieldsToHighlight = new Set<string>();
+    switch (results.status) {
+      case CalculationStatus.ERROR_INPUT:
+        ['bw', 'h', 'fck', 'fyk', 'mk', 'cover', 'dPrime'].forEach(f => fieldsToHighlight.add(f));
+        break;
+      case CalculationStatus.ERROR_X_D_LIMIT:
+        fieldsToHighlight.add('bw');
+        fieldsToHighlight.add('h');
+        fieldsToHighlight.add('mk');
+        break;
+      case CalculationStatus.ERROR_MAX_STEEL:
+        fieldsToHighlight.add('bw');
+        fieldsToHighlight.add('h');
+        break;
+      default:
+        // Clear highlights for success and warning states
+        break;
+    }
+    setHighlightedFields(fieldsToHighlight);
+  }, [results]);
+
+  useEffect(() => {
     if (forceCompressionCalc) {
       handleCalculate();
     }
@@ -42,6 +70,7 @@ export const FlexureCalculatorPage: React.FC<FlexureCalculatorPageProps> = ({ on
     setInputs(DEFAULT_INPUTS);
     setResults(null);
     setForceCompressionCalc(false);
+    setHighlightedFields(new Set());
   }, []);
 
   const resultStatusStyles = useMemo(() => {
@@ -92,16 +121,16 @@ export const FlexureCalculatorPage: React.FC<FlexureCalculatorPageProps> = ({ on
           <h2 className="text-2xl font-semibold text-slate-800 border-b pb-3 mb-4">Parâmetros de Entrada</h2>
           
           <div className="grid grid-cols-2 gap-x-4">
-            <FormField id="bw" label="Largura (b_w)" unit="cm" value={inputs.bw} onChange={handleInputChange} tooltip="Largura da alma da viga." />
-            <FormField id="h" label="Altura (h)" unit="cm" value={inputs.h} onChange={handleInputChange} tooltip="Altura total da seção transversal da viga." />
+            <FormField id="bw" label="Largura (b_w)" unit="cm" value={inputs.bw} onChange={handleInputChange} tooltip="Largura da alma da viga." isHighlighted={highlightedFields.has('bw')} />
+            <FormField id="h" label="Altura (h)" unit="cm" value={inputs.h} onChange={handleInputChange} tooltip="Altura total da seção transversal da viga." isHighlighted={highlightedFields.has('h')} />
           </div>
-          <FormField id="fck" label="f_ck" unit="MPa" value={inputs.fck} onChange={handleInputChange} tooltip="Resistência característica à compressão do concreto." />
-          <FormField id="fyk" label="f_yk" unit="MPa" value={inputs.fyk} onChange={handleInputChange} tooltip="Resistência característica ao escoamento do aço." />
-          <FormField id="mk" label="Momento (M_k)" unit="tf.m" value={inputs.mk} onChange={handleInputChange} tooltip="Momento fletor característico atuante na viga." />
+          <FormField id="fck" label="f_ck" unit="MPa" value={inputs.fck} onChange={handleInputChange} tooltip="Resistência característica à compressão do concreto." isHighlighted={highlightedFields.has('fck')} />
+          <FormField id="fyk" label="f_yk" unit="MPa" value={inputs.fyk} onChange={handleInputChange} tooltip="Resistência característica ao escoamento do aço." isHighlighted={highlightedFields.has('fyk')} />
+          <FormField id="mk" label="Momento (M_k)" unit="tf.m" value={inputs.mk} onChange={handleInputChange} tooltip="Momento fletor característico atuante na viga." isHighlighted={highlightedFields.has('mk')} />
           <FormField id="aggressiveness" label="Classe de Agressividade" type="select" options={Object.values(AggressivenessClass)} value={inputs.aggressiveness} onChange={handleInputChange} tooltip="Define o cobrimento mínimo da armadura conforme a exposição ambiental." />
           <div className="grid grid-cols-2 gap-x-4">
-            <FormField id="cover" label="Cobrimento (c)" unit="cm" value={inputs.cover} onChange={handleInputChange} tooltip="Distância da face do concreto à face externa do estribo. Ajustado pela classe de agressividade." />
-            <FormField id="dPrime" label="Cobrimento Comp. (d')" unit="cm" value={inputs.dPrime} onChange={handleInputChange} tooltip="Distância da face mais comprimida ao centro da armadura de compressão." />
+            <FormField id="cover" label="Cobrimento (c)" unit="cm" value={inputs.cover} onChange={handleInputChange} tooltip="Distância da face do concreto à face externa do estribo. Ajustado pela classe de agressividade." isHighlighted={highlightedFields.has('cover')} />
+            <FormField id="dPrime" label="Cobrimento Comp. (d')" unit="cm" value={inputs.dPrime} onChange={handleInputChange} tooltip="Distância da face mais comprimida ao centro da armadura de compressão." isHighlighted={highlightedFields.has('dPrime')} />
           </div>
 
           <div className="flex items-center space-x-4 mt-6">
