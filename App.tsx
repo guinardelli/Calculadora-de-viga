@@ -3,8 +3,9 @@ import { HomePage } from './components/HomePage';
 import { FlexureCalculatorPage } from './components/CalculatorPage';
 import { ShearCalculatorPage } from './components/ShearCalculatorPage';
 import { AnchorageCalculatorPage } from './components/AnchorageCalculatorPage';
+import { SteelConverterPage } from './components/SteelConverterPage';
 
-export type Page = 'home' | 'flexure' | 'shear' | 'anchorage';
+export type Page = 'home' | 'flexure' | 'shear' | 'anchorage' | 'steelConverter';
 
 const App: React.FC = () => {
   const [page, setPage] = useState<Page>('home');
@@ -27,6 +28,8 @@ const App: React.FC = () => {
         return <ShearCalculatorPage onBackToHome={handleBackToHome} />;
       case 'anchorage':
         return <AnchorageCalculatorPage onBackToHome={handleBackToHome} />;
+      case 'steelConverter':
+        return <SteelConverterPage onBackToHome={handleBackToHome} />;
       case 'home':
       default:
         return <HomePage onStart={handleStart} />;
