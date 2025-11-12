@@ -1,11 +1,12 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import type { BeamInput, CalculationResult } from '../types';
 import { AggressivenessClass, CalculationStatus } from '../types';
-import { DEFAULT_INPUTS, COVER_BY_AGGRESSIVENESS } from '../constants';
+import { DEFAULT_INPUTS, COVER_BY_AGGRESSIVENESS, GAMMA_C, GAMMA_S, GAMMA_F } from '../constants';
 import { calculateBeam } from '../services/calculationService';
 import { FormField } from './FormField';
 import { ResultDisplay } from './ResultDisplay';
 import { BeamVisualizer } from './BeamVisualizer';
+import { CalculationStep } from './CalculationStep';
 
 interface FlexureCalculatorPageProps {
   onBackToHome: () => void;
@@ -161,15 +162,67 @@ export const FlexureCalculatorPage: React.FC<FlexureCalculatorPageProps> = ({ on
               />
             
               {(results.status === CalculationStatus.SUCCESS || results.status === CalculationStatus.WARNING_MIN_STEEL) && (
-                 <BeamVisualizer 
-                    bw={inputs.bw} 
-                    h={inputs.h} 
-                    d={results.d} 
-                    cover={inputs.cover} 
-                    as={results.as} 
-                    x={results.x} 
-                    fck={inputs.fck} 
-                 />
+                 <>
+                  <BeamVisualizer 
+                      bw={inputs.bw} 
+                      h={inputs.h} 
+                      d={results.d} 
+                      cover={inputs.cover} 
+                      as={results.as} 
+                      x={results.x} 
+                      fck={inputs.fck} 
+                  />
+                  <div className="mt-6 pt-4 border-t border-slate-200">
+                    <h2 className="text-2xl font-semibold text-slate-800 mb-4">Memória de Cálculo</h2>
+                    <div className="space-y-4">
+                        <CalculationStep 
+                            title="Resistências de Cálculo dos Materiais"
+                            formula="f_cd = f_ck / γ_c; f_yd = f_yk / γ_s"
+                            calculation={`f_cd = ${inputs.fck} / ${GAMMA_C}; f_yd = ${inputs.fyk} / ${GAMMA_S}`}
+                            result={`f_cd = ${(results.fcd * 10).toFixed(2)} MPa; f_yd = ${(results.fyd * 10).toFixed(2)} MPa`}
+                        />
+                         <CalculationStep 
+                            title="Momento Fletor de Cálculo (Md)"
+                            formula="M_d = M_k ⋅ γ_f"
+                            calculation={`M_d = ${inputs.mk.toFixed(2)} tf.m ⋅ ${GAMMA_F}`}
+                            result={`M_d = ${(results.md / 100).toFixed(2)} kN.m`}
+                        />
+                         <CalculationStep 
+                            title="Posição da Linha Neutra (x)"
+                            formula="0.272⋅b_w⋅f_cd⋅x² - 0.68⋅b_w⋅f_cd⋅d⋅x + M_d = 0"
+                            calculation="Resolvendo a equação de 2º grau para x..."
+                            result={`x = ${results.x.toFixed(2)} cm`}
+                             note={`Altura útil (d) = ${results.d.toFixed(2)} cm`}
+                        />
+                         <CalculationStep 
+                            title="Verificação de Ductilidade (x/d)"
+                            formula="(x/d) ≤ (x/d)_lim"
+                            calculation={`${results.x.toFixed(2)} / ${results.d.toFixed(2)} = ${results.x_d_ratio.toFixed(3)}`}
+                            result={`${results.x_d_ratio.toFixed(3)} ≤ ${results.x_d_limit}`}
+                        />
+                        <CalculationStep 
+                            title="Área de Aço Calculada (As,calc)"
+                            formula="A_s,calc = M_d / (f_yd ⋅ (d - 0.4⋅x))"
+                            calculation={`A_s,calc = ${results.md.toFixed(2)} / (${(results.fyd).toFixed(2)} ⋅ (${results.d.toFixed(2)} - 0.4⋅${results.x.toFixed(2)}))`}
+                            result={`A_s,calc = ${results.asCalc.toFixed(2)} cm²`}
+                        />
+                        <CalculationStep 
+                            title="Armadura Mínima (As,min)"
+                            formula="A_s,min = max(ρ_min ⋅ b_w ⋅ d, 0.15% ⋅ b_w ⋅ h)"
+                            calculation={`A_s,min = max(${(results.rhoMin * inputs.bw * results.d).toFixed(2)}, ${(0.0015 * inputs.bw * inputs.h).toFixed(2)})`}
+                            result={`A_s,min = ${results.asMin.toFixed(2)} cm²`}
+                            note={`ρ_min = ${results.rhoMin.toFixed(5)}`}
+                        />
+                        <CalculationStep 
+                            title="Área de Aço Final (As)"
+                            formula="A_s = max(A_s,calc, A_s,min)"
+                            calculation={`A_s = max(${results.asCalc.toFixed(2)}, ${results.asMin.toFixed(2)})`}
+                            result={`A_s = ${results.as.toFixed(2)} cm²`}
+                            isFinal
+                        />
+                    </div>
+                  </div>
+                 </>
               )}
             </div>
           ) : (

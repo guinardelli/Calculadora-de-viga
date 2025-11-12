@@ -5,8 +5,9 @@ import { ShearCalculationStatus } from '../types';
 export const calculateShear = (inputs: ShearInput): ShearCalculationResult => {
   const { bw, h, fck, fyk, vk, cover, stirrupDiameter, numLegs } = inputs;
   
-  const initialResult = {
+  const initialResult: Omit<ShearCalculationResult, 'status' | 'message'> = {
     s_calc: 0, s_max: 0, s_adopted: 0, vrd2: 0, vc: 0, vsw: 0, vd: 0, asw_s_min: 0,
+    d: 0, fcd: 0, fctd: 0, fywd: 0, alpha_v2: 0, asw: 0,
   };
   
   if (!bw || !h || !fck || !fyk || !vk || !cover || !stirrupDiameter || !numLegs || [bw,h,fck,fyk,vk,cover,stirrupDiameter,numLegs].some(v => v <= 0)) {
@@ -37,8 +38,7 @@ export const calculateShear = (inputs: ShearInput): ShearCalculationResult => {
   if (Vd > VRd2) {
     return {
       ...initialResult,
-      vrd2: VRd2,
-      vd: Vd,
+      d, vd: Vd, fcd, alpha_v2, vrd2: VRd2,
       status: ShearCalculationStatus.ERROR_VRD2,
       message: `Esforço cortante (Vd = ${Vd.toFixed(2)} kN) excede a resistência da biela de compressão (VRd2 = ${VRd2.toFixed(2)} kN). A seção de concreto é insuficiente.`,
     };
@@ -84,16 +84,14 @@ export const calculateShear = (inputs: ShearInput): ShearCalculationResult => {
       message = `Cálculo OK. O espaçamento foi definido pela armadura mínima ou pelo espaçamento máximo permitido.`;
   }
   
+  const fullResult = {
+    s_calc, s_max, s_adopted, vrd2: VRd2, vc: Vc, vsw: Vsw, vd: Vd, asw_s_min,
+    d, fcd, fctd, fywd, alpha_v2, asw: Asw,
+  };
+
   return {
+    ...fullResult,
     status,
     message,
-    s_calc,
-    s_max,
-    s_adopted,
-    vrd2: VRd2,
-    vc: Vc,
-    vsw: Vsw,
-    vd: Vd,
-    asw_s_min,
   };
 };

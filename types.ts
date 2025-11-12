@@ -34,6 +34,13 @@ export interface CalculationResult {
   x_d_limit: number;
   status: CalculationStatus;
   message: string;
+  // For calculation memory
+  fcd: number;
+  fyd: number;
+  md: number;
+  asCalc: number;
+  fctm: number;
+  rhoMin: number;
 }
 
 // --- Shear Calculation Types ---
@@ -68,6 +75,13 @@ export interface ShearCalculationResult {
   vsw: number;
   vd: number;
   asw_s_min: number;
+  // For calculation memory
+  d: number;
+  fcd: number;
+  fctd: number;
+  fywd: number;
+  alpha_v2: number;
+  asw: number;
 }
 
 // --- Anchorage Calculation Types ---

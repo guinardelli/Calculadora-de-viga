@@ -5,12 +5,17 @@ import { CalculationStatus } from '../types';
 export const calculateBeam = (inputs: BeamInput): CalculationResult => {
   const { bw, h, fck, fyk, mk, cover } = inputs;
 
+  const baseEmptyResult: Omit<CalculationResult, 'status' | 'message'> = {
+    as: 0, asMin: 0, asMax: 0, x: 0, d: 0, x_d_ratio: 0, x_d_limit: 0,
+    fcd: 0, fyd: 0, md: 0, asCalc: 0, fctm: 0, rhoMin: 0,
+  };
+
   // Input validation
   if (!bw || !h || !fck || !fyk || !mk || !cover || bw <= 0 || h <= 0 || fck <= 0 || fyk <= 0 || mk <= 0 || cover <= 0) {
     return {
+      ...baseEmptyResult,
       status: CalculationStatus.ERROR_INPUT,
       message: 'Todos os valores de entrada devem ser positivos e maiores que zero.',
-      as: 0, asMin: 0, asMax: 0, x: 0, d: 0, x_d_ratio: 0, x_d_limit: 0,
     };
   }
 
@@ -38,9 +43,10 @@ export const calculateBeam = (inputs: BeamInput): CalculationResult => {
 
   if (discriminant < 0) {
     return {
+      ...baseEmptyResult,
       status: CalculationStatus.ERROR_X_D_LIMIT,
       message: 'Erro: Seção de concreto insuficiente. O momento solicitante é maior que o momento resistente máximo. Aumente a seção ou adote armadura de compressão.',
-      as: 0, asMin: 0, asMax: 0, x: 0, d, x_d_ratio: 0, x_d_limit: 0,
+      d, fcd, fyd, md: Md,
     };
   }
   
@@ -50,46 +56,55 @@ export const calculateBeam = (inputs: BeamInput): CalculationResult => {
   const x_d_limit = fck <= 50 ? 0.45 : 0.35;
   const x_d_ratio = x / d;
 
+  // Minimum and Maximum steel area (As,min, As,max)
+  const fctm = fck <= 50 ? 0.3 * Math.pow(fck, 2/3) : 2.12 * Math.log(1 + 0.11 * fck);
+  const rho_min = (0.4 * fctm) / fyk;
+  const As_min = Math.max(rho_min * bw * d, (0.15 / 100) * bw * h);
+  const As_max = (4 / 100) * bw * h;
+
   if (x_d_ratio > x_d_limit) {
     return {
+      ...baseEmptyResult,
+      asMin: As_min, asMax: As_max,
+      x, d, x_d_ratio, x_d_limit,
+      fcd, fyd, md: Md, fctm, rhoMin: rho_min,
       status: CalculationStatus.ERROR_X_D_LIMIT,
       message: `Limite de ductilidade excedido (x/d = ${x_d_ratio.toFixed(2)} > ${x_d_limit}). A seção necessita de armadura de compressão. Recomenda-se aumentar as dimensões da viga.`,
-      as: 0, asMin: 0, asMax: 0, x, d, x_d_ratio, x_d_limit,
     };
   }
 
   // Required steel area (As)
   const As_calc = Md / (fyd * (d - 0.4 * x));
-
-  // Minimum steel area (As,min)
-  const fctm = fck <= 50 ? 0.3 * Math.pow(fck, 2/3) : 2.12 * Math.log(1 + 0.11 * fck);
-  const rho_min = (0.4 * fctm) / fyk;
-  const As_min = Math.max(rho_min * bw * d, (0.15 / 100) * bw * h);
-
-  // Maximum steel area (As,max)
-  const As_max = (4 / 100) * bw * h;
   
   const As_final = Math.max(As_calc, As_min);
 
+  const commonResult = {
+      asMin: As_min, asMax: As_max, x, d, x_d_ratio, x_d_limit,
+      fcd, fyd, md: Md, asCalc: As_calc, fctm, rhoMin: rho_min,
+  };
+
   if (As_final > As_max) {
     return {
+      ...commonResult,
+      as: As_final,
       status: CalculationStatus.ERROR_MAX_STEEL,
       message: `Armadura máxima excedida (As = ${As_final.toFixed(2)} cm² > ${As_max.toFixed(2)} cm²). Aumente a seção de concreto.`,
-      as: As_final, asMin: As_min, asMax: As_max, x, d, x_d_ratio, x_d_limit,
     };
   }
 
   if (As_calc < As_min) {
      return {
+      ...commonResult,
+      as: As_final,
       status: CalculationStatus.WARNING_MIN_STEEL,
       message: `Cálculo OK. A armadura calculada (${As_calc.toFixed(2)} cm²) é menor que a mínima. Adotada armadura mínima.`,
-      as: As_final, asMin: As_min, asMax: As_max, x, d, x_d_ratio, x_d_limit,
     };
   }
 
   return {
+    ...commonResult,
+    as: As_final,
     status: CalculationStatus.SUCCESS,
     message: 'Dimensionamento concluído com sucesso.',
-    as: As_final, asMin: As_min, asMax: As_max, x, d, x_d_ratio, x_d_limit,
   };
 };
