@@ -1,4 +1,4 @@
-import { AggressivenessClass, type BeamInput, type ShearInput } from './types';
+import { AggressivenessClass, type BeamInput, type ShearInput, type AnchorageInput, BarType, SteelRatioOption, AnchorageType, BondCondition } from './types';
 
 export const GAMMA_C = 1.4;
 export const GAMMA_S = 1.15;
@@ -34,4 +34,18 @@ export const DEFAULT_SHEAR_INPUTS: ShearInput = {
   cover: 3.0,
   stirrupDiameter: 5.0,
   numLegs: 2,
+};
+
+// --- Anchorage Constants ---
+export const BAR_DIAMETERS: readonly number[] = [6.3, 8.0, 10.0, 12.5, 16.0, 20.0, 25.0, 32.0];
+
+export const DEFAULT_ANCHORAGE_INPUTS: AnchorageInput = {
+  diameter: 10.0,
+  fck: 30,
+  barType: BarType.CA50,
+  steelRatioOption: SteelRatioOption.EQUAL,
+  asCalc: 1,
+  asEff: 1,
+  anchorageType: AnchorageType.STRAIGHT,
+  bondCondition: BondCondition.GOOD,
 };

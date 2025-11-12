@@ -70,3 +70,51 @@ export interface ShearCalculationResult {
   vd: number;
   asw_s_min: number;
 }
+
+// --- Anchorage Calculation Types ---
+
+export enum SteelRatioOption {
+  EQUAL = 'equal',
+  CUSTOM = 'custom',
+}
+
+export enum AnchorageType {
+  STRAIGHT = 'straight',
+  HOOK = 'hook',
+}
+
+export enum BarType {
+  CA25 = 'CA-25',
+  CA50 = 'CA-50',
+  CA60 = 'CA-60',
+}
+
+export enum BondCondition {
+  GOOD = 'good',
+  POOR = 'poor',
+}
+
+export interface AnchorageInput {
+  diameter: number;
+  fck: number;
+  barType: BarType;
+  steelRatioOption: SteelRatioOption;
+  asCalc: number;
+  asEff: number;
+  anchorageType: AnchorageType;
+  bondCondition: BondCondition;
+}
+
+export enum AnchorageCalculationStatus {
+  SUCCESS = 'success',
+  ERROR_INPUT = 'error_input',
+  IDLE = 'idle',
+}
+
+export interface AnchorageCalculationResult {
+  status: AnchorageCalculationStatus;
+  message: string;
+  lb: number;
+  lb_min: number;
+  lb_nec: number;
+}
