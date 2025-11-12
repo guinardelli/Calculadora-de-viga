@@ -1,4 +1,4 @@
-import { AggressivenessClass, type BeamInput, type ShearInput, type AnchorageInput, BarType, SteelRatioOption, AnchorageType, BondCondition } from './types';
+import { AggressivenessClass, type BeamInput, type ShearInput, type AnchorageInput, BarType, SteelRatioOption, AnchorageType, BondCondition, type MinimumSteelInput } from './types';
 
 export const GAMMA_C = 1.4;
 export const GAMMA_S = 1.15;
@@ -49,4 +49,26 @@ export const DEFAULT_ANCHORAGE_INPUTS: AnchorageInput = {
   asEff: 1,
   anchorageType: AnchorageType.STRAIGHT,
   bondCondition: BondCondition.GOOD,
+};
+
+// --- Minimum Steel Constants ---
+export const FCK_VALUES: readonly number[] = [20, 25, 30, 35, 40, 45, 50];
+
+// NBR 6118:2014 - Table 17.1 - Minimum reinforcement rates for beams (%)
+export const MINIMUM_STEEL_RATES: { [key: number]: number } = {
+  20: 0.150,
+  25: 0.150,
+  30: 0.150,
+  35: 0.164,
+  40: 0.179,
+  45: 0.194,
+  50: 0.208,
+};
+
+export const DEFAULT_MINIMUM_STEEL_INPUTS: MinimumSteelInput = {
+  bw: 14,
+  h: 40,
+  fck: 40,
+  fyk: 500,
+  d_h_ratio: 0.8,
 };

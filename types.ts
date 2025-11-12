@@ -153,3 +153,33 @@ export interface AnchorageCalculationResult {
   lb_nec_calc: number;
   phi: number;
 }
+
+// --- Minimum Steel Calculation Types ---
+
+export interface MinimumSteelInput {
+  bw: number;
+  h: number;
+  fck: number;
+  fyk: number;
+  d_h_ratio: number;
+}
+
+export enum MinimumSteelStatus {
+  SUCCESS = 'success',
+  ERROR_INPUT = 'error_input',
+  IDLE = 'idle',
+}
+
+export interface MinimumSteelResult {
+  status: MinimumSteelStatus;
+  message: string;
+  // Rate results
+  rho_min_percent: number;
+  as_min_by_rate: number;
+  // Moment results
+  w: number;
+  md_resisted: number; // in tf.m for display
+  x: number;
+  // intermediate
+  d: number;
+}
