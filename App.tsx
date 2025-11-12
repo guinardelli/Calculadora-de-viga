@@ -37,7 +37,7 @@ const App: React.FC = () => {
       case CalculationStatus.SUCCESS:
         return { color: 'bg-green-500', icon: 'fa-check-circle' };
       case CalculationStatus.WARNING_MIN_STEEL:
-        return { color: 'bg-yellow-500', icon: 'fa-exclamation-triangle' };
+        return { color: 'bg-amber-500', icon: 'fa-exclamation-triangle' };
       case CalculationStatus.ERROR_X_D_LIMIT:
       case CalculationStatus.ERROR_MAX_STEEL:
       case CalculationStatus.ERROR_INPUT:
@@ -45,6 +45,14 @@ const App: React.FC = () => {
       default:
         return { color: 'bg-slate-500', icon: 'fa-calculator' };
     }
+  }, [results]);
+
+  const asStatus = useMemo(() => {
+    if (!results) return 'default';
+    if (results.status === CalculationStatus.WARNING_MIN_STEEL) {
+        return 'warning';
+    }
+    return 'primary';
   }, [results]);
 
   return (
@@ -93,12 +101,50 @@ const App: React.FC = () => {
               
               <h2 className="text-2xl font-semibold text-slate-800 border-b pb-3 mb-2">Resultados</h2>
 
-              <ResultDisplay label="Área de Aço Calculada (A_s)" value={results.as.toFixed(2)} unit="cm²" color="text-blue-600" tooltip="Área de aço final necessária para a armadura de tração." />
-              <ResultDisplay label="Posição da Linha Neutra (x)" value={results.x.toFixed(2)} unit="cm" tooltip="Profundidade da linha neutra a partir da fibra mais comprimida."/>
-              <ResultDisplay label="Altura Útil (d)" value={results.d.toFixed(2)} unit="cm" tooltip="Distância do centro de gravidade da armadura de tração à fibra mais comprimida." />
-              <ResultDisplay label="Ductilidade (x/d)" value={results.x_d_ratio.toFixed(2)} unit={`(Limite: ${results.x_d_limit})`} color={results.status === CalculationStatus.ERROR_X_D_LIMIT ? 'text-red-500' : 'text-slate-900'} tooltip="Verificação da ductilidade da seção. Deve ser menor que o limite normativo."/>
-              <ResultDisplay label="Armadura Mínima (A_s,min)" value={results.asMin.toFixed(2)} unit="cm²" tooltip="Menor área de aço permitida pela norma para evitar ruptura frágil."/>
-              <ResultDisplay label="Armadura Máxima (A_s,max)" value={results.asMax.toFixed(2)} unit="cm²" tooltip="Maior área de aço permitida pela norma para garantir boa concretagem."/>
+              <ResultDisplay 
+                label="Área de Aço Final" 
+                description="A_s"
+                value={results.as.toFixed(2)} 
+                unit="cm²" 
+                status={asStatus}
+                tooltip="Área de aço final necessária para a armadura de tração, considerando a armadura mínima." 
+              />
+              <ResultDisplay 
+                label="Posição da Linha Neutra"
+                description="x" 
+                value={results.x.toFixed(2)} 
+                unit="cm" 
+                tooltip="Profundidade da linha neutra a partir da fibra mais comprimida."
+              />
+              <ResultDisplay 
+                label="Altura Útil" 
+                description="d"
+                value={results.d.toFixed(2)} 
+                unit="cm" 
+                tooltip="Distância do centro de gravidade da armadura de tração à fibra mais comprimida." 
+              />
+              <ResultDisplay 
+                label="Verificação de Ductilidade" 
+                description="x/d"
+                value={results.x_d_ratio.toFixed(2)} 
+                unit={`(Limite: ${results.x_d_limit})`} 
+                status={results.status === CalculationStatus.ERROR_X_D_LIMIT ? 'error' : 'default'} 
+                tooltip="Verificação da ductilidade da seção. O valor deve ser menor que o limite normativo para garantir um comportamento dúctil."
+              />
+              <ResultDisplay 
+                label="Armadura Mínima" 
+                description="A_s,min"
+                value={results.asMin.toFixed(2)} 
+                unit="cm²" 
+                tooltip="Menor área de aço permitida pela norma para evitar ruptura frágil."
+              />
+              <ResultDisplay 
+                label="Armadura Máxima" 
+                description="A_s,max"
+                value={results.asMax.toFixed(2)} 
+                unit="cm²" 
+                tooltip="Maior área de aço permitida pela norma para garantir boa concretagem e evitar a fragilização do concreto."
+              />
             
               {(results.status === CalculationStatus.SUCCESS || results.status === CalculationStatus.WARNING_MIN_STEEL) && (
                  <BeamVisualizer 
