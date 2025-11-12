@@ -182,4 +182,7 @@ export interface MinimumSteelResult {
   x: number;
   // intermediate
   d: number;
+  fcd: number;
+  fyd: number;
+  md_resisted_kn_cm: number;
 }
