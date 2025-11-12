@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import type { AnchorageInput, AnchorageCalculationResult } from '../types';
 import { AnchorageCalculationStatus, SteelRatioOption, BarType, AnchorageType, BondCondition } from '../types';
 import { DEFAULT_ANCHORAGE_INPUTS, BAR_DIAMETERS } from '../constants';
@@ -16,12 +16,21 @@ export const AnchorageCalculatorPage: React.FC<AnchorageCalculatorPageProps> = (
 
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
-    if (type === 'radio') {
-       setInputs(prev => ({ ...prev, [name]: value }));
-    } else {
-       setInputs(prev => ({ ...prev, [name]: parseFloat(value) || 0 }));
-    }
+    // For radio buttons, the value is a string from the enum. For others, parse as float.
+    const isRadio = type === 'radio';
+    setInputs(prev => ({
+      ...prev,
+      [name]: isRadio ? value : (name === 'barType' || name === 'bondCondition' || name === 'steelRatioOption' || name === 'anchorageType' ? value : parseFloat(value) || 0)
+    }));
   }, []);
+  
+  // NBR 6118 does not allow hooks for plain bars (CA-25).
+  // This effect ensures the correct anchorage type is selected if the user changes the bar type.
+  useEffect(() => {
+    if (inputs.barType === BarType.CA25) {
+      setInputs(prev => ({ ...prev, anchorageType: AnchorageType.STRAIGHT }));
+    }
+  }, [inputs.barType]);
 
   const handleCalculate = useCallback(() => {
     const calculationResults = calculateAnchorage(inputs);
@@ -34,6 +43,7 @@ export const AnchorageCalculatorPage: React.FC<AnchorageCalculatorPageProps> = (
   }, []);
   
   const isCustomSteelRatio = useMemo(() => inputs.steelRatioOption === SteelRatioOption.CUSTOM, [inputs.steelRatioOption]);
+  const isCA25 = useMemo(() => inputs.barType === BarType.CA25, [inputs.barType]);
 
   const resultStatusStyles = useMemo(() => {
     if (!results) return { color: 'bg-slate-500', icon: 'fa-calculator' };
@@ -82,19 +92,19 @@ export const AnchorageCalculatorPage: React.FC<AnchorageCalculatorPageProps> = (
                   <label className="block text-sm font-medium text-slate-700 mb-2">Tipo de Aço</label>
                   {(Object.values(BarType)).map(bar => (
                     <div key={bar} className="flex items-center mb-1">
-                      <input type="radio" id={bar} name="barType" value={bar} checked={inputs.barType === bar} onChange={handleInputChange} className="h-4 w-4 text-blue-600 border-slate-300 focus:ring-blue-500" />
-                      <label htmlFor={bar} className="ml-2 block text-sm text-slate-900">{bar}</label>
+                      <input type="radio" id={`bar-${bar}`} name="barType" value={bar} checked={inputs.barType === bar} onChange={handleInputChange} className="h-4 w-4 text-orange-600 border-slate-300 focus:ring-orange-500" />
+                      <label htmlFor={`bar-${bar}`} className="ml-2 block text-sm text-slate-900">{bar}</label>
                     </div>
                   ))}
                </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">Aderência</label>
                    <div className="flex items-center mb-1">
-                      <input type="radio" id="bond-good" name="bondCondition" value={BondCondition.GOOD} checked={inputs.bondCondition === BondCondition.GOOD} onChange={handleInputChange} className="h-4 w-4 text-blue-600 border-slate-300 focus:ring-blue-500" />
+                      <input type="radio" id="bond-good" name="bondCondition" value={BondCondition.GOOD} checked={inputs.bondCondition === BondCondition.GOOD} onChange={handleInputChange} className="h-4 w-4 text-orange-600 border-slate-300 focus:ring-orange-500" />
                       <label htmlFor="bond-good" className="ml-2 block text-sm text-slate-900">Boa</label>
                     </div>
                      <div className="flex items-center mb-1">
-                      <input type="radio" id="bond-poor" name="bondCondition" value={BondCondition.POOR} checked={inputs.bondCondition === BondCondition.POOR} onChange={handleInputChange} className="h-4 w-4 text-blue-600 border-slate-300 focus:ring-blue-500" />
+                      <input type="radio" id="bond-poor" name="bondCondition" value={BondCondition.POOR} checked={inputs.bondCondition === BondCondition.POOR} onChange={handleInputChange} className="h-4 w-4 text-orange-600 border-slate-300 focus:ring-orange-500" />
                       <label htmlFor="bond-poor" className="ml-2 block text-sm text-slate-900">Má</label>
                     </div>
                </div>
@@ -104,11 +114,11 @@ export const AnchorageCalculatorPage: React.FC<AnchorageCalculatorPageProps> = (
           <fieldset className="mb-4 border border-slate-200 p-3 rounded-md">
             <legend className="text-md font-semibold text-slate-800 px-2">Armadura</legend>
              <div className="flex items-center mb-2">
-              <input type="radio" id="steel-equal" name="steelRatioOption" value={SteelRatioOption.EQUAL} checked={!isCustomSteelRatio} onChange={handleInputChange} className="h-4 w-4 text-blue-600 border-slate-300 focus:ring-blue-500"/>
+              <input type="radio" id="steel-equal" name="steelRatioOption" value={SteelRatioOption.EQUAL} checked={!isCustomSteelRatio} onChange={handleInputChange} className="h-4 w-4 text-orange-600 border-slate-300 focus:ring-orange-500"/>
               <label htmlFor="steel-equal" className="ml-2 block text-sm text-slate-900">A_s,calc = A_s,ef</label>
             </div>
              <div className="flex items-center mb-2">
-              <input type="radio" id="steel-custom" name="steelRatioOption" value={SteelRatioOption.CUSTOM} checked={isCustomSteelRatio} onChange={handleInputChange} className="h-4 w-4 text-blue-600 border-slate-300 focus:ring-blue-500"/>
+              <input type="radio" id="steel-custom" name="steelRatioOption" value={SteelRatioOption.CUSTOM} checked={isCustomSteelRatio} onChange={handleInputChange} className="h-4 w-4 text-orange-600 border-slate-300 focus:ring-orange-500"/>
                <label htmlFor="steel-custom" className="ml-2 block text-sm text-slate-900">Informar A_s</label>
             </div>
             {isCustomSteelRatio && (
@@ -122,12 +132,12 @@ export const AnchorageCalculatorPage: React.FC<AnchorageCalculatorPageProps> = (
            <fieldset className="mb-4 border border-slate-200 p-3 rounded-md">
             <legend className="text-md font-semibold text-slate-800 px-2">Ancoragem</legend>
               <div className="flex items-center mb-1">
-                <input type="radio" id="anchor-straight" name="anchorageType" value={AnchorageType.STRAIGHT} checked={inputs.anchorageType === AnchorageType.STRAIGHT} onChange={handleInputChange} className="h-4 w-4 text-blue-600 border-slate-300 focus:ring-blue-500" />
+                <input type="radio" id="anchor-straight" name="anchorageType" value={AnchorageType.STRAIGHT} checked={inputs.anchorageType === AnchorageType.STRAIGHT} onChange={handleInputChange} className="h-4 w-4 text-orange-600 border-slate-300 focus:ring-orange-500" />
                 <label htmlFor="anchor-straight" className="ml-2 block text-sm text-slate-900">Sem Gancho</label>
               </div>
               <div className="flex items-center mb-1">
-                <input type="radio" id="anchor-hook" name="anchorageType" value={AnchorageType.HOOK} checked={inputs.anchorageType === AnchorageType.HOOK} onChange={handleInputChange} className="h-4 w-4 text-blue-600 border-slate-300 focus:ring-blue-500" />
-                <label htmlFor="anchor-hook" className="ml-2 block text-sm text-slate-900">Com Gancho</label>
+                <input type="radio" id="anchor-hook" name="anchorageType" value={AnchorageType.HOOK} checked={inputs.anchorageType === AnchorageType.HOOK} onChange={handleInputChange} className="h-4 w-4 text-orange-600 border-slate-300 focus:ring-orange-500 disabled:bg-slate-200 disabled:cursor-not-allowed" disabled={isCA25} />
+                <label htmlFor="anchor-hook" className={`ml-2 block text-sm ${isCA25 ? 'text-slate-400 cursor-not-allowed' : 'text-slate-900'}`}>Com Gancho {isCA25 && "(N/A)"}</label>
               </div>
            </fieldset>
           

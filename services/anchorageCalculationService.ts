@@ -40,10 +40,17 @@ export const calculateAnchorage = (inputs: AnchorageInput): AnchorageCalculation
 
     // --- Basic Anchorage Length (lb) ---
     const phi = diameter / 10; // diameter in cm
-    const lb = (phi / 4) * (fyd / fbd);
+    let lb = (phi / 4) * (fyd / fbd);
+
+    // According to NBR 6118:2014, item 9.4.2.4, straight anchorage for plain bars (CA-25)
+    // must be doubled.
+    if (barType === BarType.CA25) {
+        lb = lb * 2;
+    }
 
     // --- Necessary Anchorage Length (lb,nec) ---
-    const alpha = anchorageType === AnchorageType.STRAIGHT ? 1.0 : 0.7;
+    // According to NBR 6118, hooks cannot be used for plain bars.
+    const alpha = (anchorageType === AnchorageType.HOOK && barType !== BarType.CA25) ? 0.7 : 1.0;
     const steelRatio = steelRatioOption === SteelRatioOption.EQUAL ? 1.0 : asCalc / asEff;
     const lb_nec_calc = alpha * lb * steelRatio;
 
